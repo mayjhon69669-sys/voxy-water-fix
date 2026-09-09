@@ -13,7 +13,7 @@ Java 21 or newer is required.
 On Windows:
 
 ```powershell
-.\gradlew.bat build
+.\gradlew build
 ```
 
 On Linux or macOS:
