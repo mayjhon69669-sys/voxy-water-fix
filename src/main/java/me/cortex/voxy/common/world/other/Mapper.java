@@ -20,7 +20,6 @@ import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.block.LeavesBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.FluidState;
@@ -75,6 +74,12 @@ public class Mapper {
     public static boolean isAir(long id) {
         //Note: air can mean void, cave or normal air, as the block state is remapped during ingesting
         return (id&(((1L<<20)-1)<<27)) == 0;
+    }
+
+    public static int isNotAirInt(long id) {
+        // Block id zero is air, so clamp every other id to one. Returning an
+        // int avoids a branch in the section-loading and update hot paths.
+        return Math.min(getBlockId(id), 1);
     }
 
     public static int getBlockId(long id) {
@@ -362,11 +367,7 @@ public class Mapper {
         public StateEntry(int id, BlockState state) {
             this.id = id;
             this.state = state;
-            //Override opacity of leaves to be solid
-            if (state.getBlock() instanceof LeavesBlock) {
-                this.opacity = 15;
-            } else {
-                this.opacity = state.getLightBlock(new BlockGetter() {
+            this.opacity = state.getLightBlock(new BlockGetter() {
 
                     @Override
                     public int getHeight() {
@@ -394,7 +395,6 @@ public class Mapper {
                     }
                     
                 }, BlockPos.ZERO);
-            }
         }
 
         public byte[] serialize() {

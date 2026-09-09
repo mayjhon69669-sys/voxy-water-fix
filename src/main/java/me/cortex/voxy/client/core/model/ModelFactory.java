@@ -22,7 +22,6 @@ import net.minecraft.core.Direction;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.tags.BlockTags;
 import net.minecraft.world.level.BlockAndTintGetter;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.ColorResolver;
@@ -281,9 +280,6 @@ public class ModelFactory {
         }
         if (layer==null && (flags&8)!=0) {
             layer = RenderType.cutout();
-        }
-        if (bake.state.is(BlockTags.LEAVES)) {
-            layer = RenderType.solid();
         }
         if (layer == null) {
             layer = RenderType.solid();
@@ -636,6 +632,11 @@ public class ModelFactory {
 
         //TODO: THIS
         modelFlags |= isShaded?8:0;//model has AO and shade
+
+        // Expose fluid models to the render shader. This lets the shader apply
+        // a water-surface-only LOD seam guard without expanding glass or other
+        // translucent block geometry.
+        modelFlags |= isFluid?16:0;
 
         //modelFlags |= blockRenderLayer == RenderLayer.getSolid()?0:1;// should discard alpha
         MemoryUtil.memPutInt(uploadPtr, modelFlags); uploadPtr += 4;

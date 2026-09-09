@@ -13,12 +13,10 @@ import net.minecraft.client.renderer.RenderType;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.tags.BlockTags;
 import net.minecraft.world.level.BlockAndTintGetter;
 import net.minecraft.world.level.ColorResolver;
 import net.minecraft.world.level.LightLayer;
 import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.block.LeavesBlock;
 import net.minecraft.world.level.block.LiquidBlock;
 import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -109,7 +107,7 @@ public class SoftwareModelTextureBakery {
             var quads = model.getQuads(state, direction, new SingleThreadedRandomSource(42L));
             for (var quad : quads) {
                 (layer == RenderType.translucent() ? this.translucentVC : this.opaqueVC)
-                        .quad(quad, state.is(BlockTags.LEAVES), layer);
+                        .quad(quad, layer);
             }
         }
     }
@@ -228,11 +226,7 @@ public class SoftwareModelTextureBakery {
         if (state.getBlock() instanceof LiquidBlock) {
             blockRenderLayer = ItemBlockRenderTypes.getRenderLayer(state.getFluidState());
         } else {
-            if (state.getBlock() instanceof LeavesBlock) {
-                blockRenderLayer = RenderType.solid();
-            } else {
-                blockRenderLayer = ItemBlockRenderTypes.getChunkRenderType(state);
-            }
+            blockRenderLayer = ItemBlockRenderTypes.getChunkRenderType(state);
         }
 
         // TODO: support block model entities

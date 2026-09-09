@@ -88,12 +88,8 @@ public final class ReuseVertexConsumer implements VertexConsumer {
     }
 
     public ReuseVertexConsumer quad(BakedQuad quad, RenderType layer) {
-        return this.quad(quad, false, layer);
-    }
-
-    public ReuseVertexConsumer quad(BakedQuad quad, boolean forceSolid, RenderType layer) {
         int meta = 0;
-        meta |= forceSolid?0:(layer!=RenderType.solid()?1:0);//has discard
+        meta |= layer!=RenderType.solid()?1:0;//has discard
         meta |= quad.isTinted()?4:0;//has tinting
         return this.quad(quad, meta);
     }

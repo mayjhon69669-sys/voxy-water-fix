@@ -132,11 +132,21 @@ void setupQuad(out QuadData quad, const in Quad rawQuad, uvec2 sPos, bool genera
     }
 
     vec4 faceSize = getFaceSize(faceData);
+
     #ifdef USE_SINGLE_TRI
     faceSize *= 2;
     #endif
     vec3 quadStart = extractPos(rawQuad);
     float depthOffset = extractFaceIndentation(faceData);
+
+    // Fluid surfaces are recessed below the top of their source block. Voxy's
+    // ordinary model transform scales that recess (and the discarded lower
+    // child at the first mip) with the LOD, placing each coarse ocean surface
+    // at a different world Y. Keep that offset in world-block units so all
+    // distant ocean LODs meet at the same elevation.
+    if (face == 1u && modelIsFluid(model) && lodLevel != 0u) {
+        depthOffset = (depthOffset + 1.0) / lodScale;
+    }
     quadStart += swizzelDataAxis(face>>1, vec3(faceSize.xz, mix(depthOffset, 1-depthOffset, float(face&1u))));
 
     quad.lodScale = lodScale;
