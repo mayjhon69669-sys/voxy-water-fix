@@ -2,7 +2,7 @@
 
 This branch backports Voxy 0.2.19 beta to Minecraft 1.21.1 with Fabric and Sodium 0.8. It also fixes a visible height seam between water surfaces rendered at different distant LOD levels.
 
-The water correction marks fluid block models and adjusts the top-face depth offset according to the active LOD scale. No custom leaf rendering, leaf textures, or leaf opacity changes are included.
+The water correction marks fluid block models and adjusts the top-face depth offset according to the active LOD scale. 
 
 This is an unofficial source-only backport. Do not request support for it from the original Voxy developers.
 
