@@ -1067,6 +1067,7 @@ public class NodeManager {
     }
 
     //==================================================================================================================
+    private int nodeWarningCount;
     public void processRequest(long pos) {
         int nodeId = this.activeSectionMap.get(pos);
         if (nodeId == -1) {
@@ -1129,7 +1130,13 @@ public class NodeManager {
 
             //Check if the node is already in-flight, if it is, dont do any processing
             if (this.nodeData.isNodeRequestInFlight(nodeId)) {
-                Logger.warn("Tried processing a node that already has a request in flight: " + nodeId + " pos: " + WorldEngine.pprintPos(pos) + " ignoring");
+                if (this.nodeWarningCount < 99) {
+                    this.nodeWarningCount++;
+                    Logger.warn("Tried processing a node that already has a request in flight: " + nodeId + " pos: " + WorldEngine.pprintPos(pos) + " ignoring");
+                } else if (this.nodeWarningCount == 99) {
+                    this.nodeWarningCount++;
+                    Logger.warn("Suppressing repeated in-flight node warnings");
+                }
                 return;
             }
 

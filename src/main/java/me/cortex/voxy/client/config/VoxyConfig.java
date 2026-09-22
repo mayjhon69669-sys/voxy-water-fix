@@ -41,6 +41,24 @@ public class VoxyConfig {
     public String ssaoMode;
 
     public boolean useEnvironmentalFog = true;
+    public String fogMode;
+
+    public me.cortex.voxy.client.core.NormalRenderPipeline.FogMode getFogMode() {
+        var defaultMode = useEnvironmentalFog
+                ? me.cortex.voxy.client.core.NormalRenderPipeline.FogMode.FOG_AND_FADE
+                : me.cortex.voxy.client.core.NormalRenderPipeline.FogMode.OFF;
+        if (fogMode == null) return defaultMode;
+        try {
+            return me.cortex.voxy.client.core.NormalRenderPipeline.FogMode.valueOf(fogMode.toUpperCase(Locale.ROOT));
+        } catch (IllegalArgumentException e) {
+            return defaultMode;
+        }
+    }
+
+    public void setFogMode(me.cortex.voxy.client.core.NormalRenderPipeline.FogMode mode) {
+        fogMode = mode.name().toLowerCase(Locale.ROOT);
+        useEnvironmentalFog = mode.hasFog;
+    }
 
     public SSAO.SSAOMode getSSAOMode() {
         if (this.ssaoMode == null) return SSAO.SSAOMode.AUTO;

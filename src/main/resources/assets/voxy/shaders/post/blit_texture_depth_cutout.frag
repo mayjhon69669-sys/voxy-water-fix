@@ -6,6 +6,10 @@ layout(location = 2) uniform mat4 projMat;
 
 #ifdef EMIT_COLOUR
 layout(binding = 3) uniform sampler2D colourTex;
+#ifdef HAS_FADE
+layout(location = 9) uniform vec2 fadeParams;
+layout(location = 10) uniform vec3 worldUpInView;
+#endif
 #ifdef USE_ENV_FOG
 layout(location = 4) uniform vec2 fogParams;//.x=fogStart,.y=fogEnd
 layout(location = 5) uniform vec4 fogColor;
@@ -59,6 +63,12 @@ void main() {
         if (fogDensity > 0.0) fogLerp = (exp(fogDensity * fogLerp) - 1.0) / (exp(fogDensity) - 1.0);
         colour.rgb = mix(colour.rgb, fogColor.rgb, clamp(fogLerp * fogIntensity, 0.0, 1.0));
     }
+    #endif
+    #ifdef HAS_FADE
+    float vertical = dot(point, worldUpInView);
+    float horizontalDistance = sqrt(max(dot(point, point) - vertical * vertical, 0.0));
+    colour.a *= 1.0 - clamp((horizontalDistance - fadeParams.x) * fadeParams.y, 0.0, 1.0);
+    if (colour.a <= 0.0) discard;
     #endif
     #else
     colour = vec4(0);

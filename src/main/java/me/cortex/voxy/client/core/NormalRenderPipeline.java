@@ -41,16 +41,25 @@ public class NormalRenderPipeline extends AbstractRenderPipeline {
     private GlTexture colourSSAOTex;
     private final GlFramebuffer fbSSAO = new GlFramebuffer();
 
-    private final boolean useEnvFog;
+    private final FogMode fogMode;
+    public enum FogMode {
+        FOG_AND_FADE(true, true), FOG(true, false), FADE(false, true), OFF(false, false);
+        public final boolean hasFog;
+        public final boolean hasFade;
+        FogMode(boolean hasFog, boolean hasFade) {
+            this.hasFog = hasFog;
+            this.hasFade = hasFade;
+        }
+    }
     private final FullscreenBlit finalBlit;
 
     private final SSAO ssao;
 
     protected NormalRenderPipeline(RenderProperties properties, AsyncNodeManager nodeManager, NodeCleaner nodeCleaner, HierarchicalOcclusionTraverser traversal, BooleanSupplier frexSupplier) {
         super(properties, nodeManager, nodeCleaner, traversal, frexSupplier, false);
-        this.useEnvFog = VoxyConfig.CONFIG.useEnvironmentalFog;
+        this.fogMode = VoxyConfig.CONFIG.getFogMode();
         this.finalBlit = new FullscreenBlit(properties, "voxy:post/blit_texture_depth_cutout.frag",
-                a->a.defineIf("USE_ENV_FOG", this.useEnvFog).define("EMIT_COLOUR"));
+                a->a.defineIf("USE_ENV_FOG", this.fogMode.hasFog).defineIf("HAS_FADE", this.fogMode.hasFade).define("EMIT_COLOUR"));
 
 
         this.ssao = SSAO.createSSAO(properties, VoxyConfig.CONFIG.getSSAOMode());
@@ -102,7 +111,7 @@ public class NormalRenderPipeline extends AbstractRenderPipeline {
         float renderDistance = Minecraft.getInstance().gameRenderer.getRenderDistance();
         boolean fogCoversAllRendering = fogEnd < renderDistance;
 
-        if (this.useEnvFog) {
+        if (this.fogMode.hasFog) {
             if (Math.abs(fogEnd - fogStart) > 1) {
                 glUniform2f(4, fogStart, fogEnd);
                 glUniform4f(5, fogColor[0], fogColor[1], fogColor[2], 1.0f);
@@ -118,6 +127,15 @@ public class NormalRenderPipeline extends AbstractRenderPipeline {
             }
         }
 
+        if (this.fogMode.hasFade) {
+            float end = Math.max(renderDistance + 1, VoxyConfig.CONFIG.sectionRenderDistance * 512 - 32);
+            float start = Math.max(renderDistance, end * 0.9f);
+            glUniform2f(9, start, 1.0f / Math.max(end - start, 1.0f));
+            // point is in view space; project out world-up so pitching the camera
+            // does not change the horizontal distance used for the LOD edge.
+            var up = viewport.modelView.transformDirection(new org.joml.Vector3f(0, 1, 0)).normalize();
+            glUniform3f(10, up.x, up.y, up.z);
+        }
         glBindTextureUnit(3, this.colourSSAOTex.id);
 
         //Do alpha blending

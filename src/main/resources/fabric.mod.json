@@ -1,5 +1,6 @@
 {
   "schemaVersion": 1,
+  "jars": [{"file": "META-INF/jars/dummyprovider.jar"}],
   "id": "voxy",
   "version": "${version}",
   "custom": {

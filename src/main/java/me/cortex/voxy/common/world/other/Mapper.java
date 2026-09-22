@@ -20,6 +20,7 @@ import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.LeavesBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.FluidState;
@@ -367,7 +368,11 @@ public class Mapper {
         public StateEntry(int id, BlockState state) {
             this.id = id;
             this.state = state;
-            this.opacity = state.getLightBlock(new BlockGetter() {
+            //Override opacity of leaves to be solid
+            if (state.getBlock() instanceof LeavesBlock) {
+                this.opacity = 15;
+            } else {
+                this.opacity = state.getLightBlock(new BlockGetter() {
 
                     @Override
                     public int getHeight() {
@@ -395,6 +400,7 @@ public class Mapper {
                     }
                     
                 }, BlockPos.ZERO);
+            }
         }
 
         public byte[] serialize() {

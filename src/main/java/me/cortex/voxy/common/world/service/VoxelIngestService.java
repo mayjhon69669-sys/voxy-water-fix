@@ -33,23 +33,25 @@ public class VoxelIngestService {
 
     private void processJob() {
         var task = this.ingestQueue.pop();
-        task.world.markActive();
+        try {
+            var section = task.section;
+            var vs = SECTION_CACHE.get().setPosition(task.cx, task.cy, task.cz);
 
-        var section = task.section;
-        var vs = SECTION_CACHE.get().setPosition(task.cx, task.cy, task.cz);
-
-        if (section.hasOnlyAir() && task.blockLight==null && task.skyLight==null) {//If the chunk section has lighting data, propagate it
-            WorldUpdater.insertUpdate(task.world, vs.zero());
-        } else {
-            VoxelizedSection csec = WorldConversionFactory.convert(
-                    vs,
-                    task.world.getMapper(),
-                    section.getStates(),
-                    section.getBiomes(),
-                    getLightingSupplier(task)
-            );
-            WorldVoxilizedSectionMipper.mipSection(csec, task.world.getMapper());
-            WorldUpdater.insertUpdate(task.world, csec);
+            if (section.hasOnlyAir() && task.blockLight==null && task.skyLight==null) {//If the chunk section has lighting data, propagate it
+                WorldUpdater.insertUpdate(task.world, vs.zero());
+            } else {
+                VoxelizedSection csec = WorldConversionFactory.convert(
+                        vs,
+                        task.world.getMapper(),
+                        section.getStates(),
+                        section.getBiomes(),
+                        getLightingSupplier(task)
+                );
+                WorldVoxilizedSectionMipper.mipSection(csec, task.world.getMapper());
+                WorldUpdater.insertUpdate(task.world, csec);
+            }
+        } finally {
+            task.world.releaseRef();
         }
     }
 
@@ -120,14 +122,7 @@ public class VoxelIngestService {
             for (var section : chunk.getSections()) {
                 i++;
                 if (section == null || !shouldIngestSection(section, chunk.getPos().x, i, chunk.getPos().z)) continue;
-                engine.markActive();
-                this.ingestQueue.add(new IngestSection(chunk.getPos().x, i, chunk.getPos().z, engine, section, null, null));
-                try {
-                    this.service.execute();
-                } catch (Exception e) {
-                    Logger.error("Executing had an error: assume shutting down, aborting",e);
-                    break;
-                }
+                if (!this.submit(new IngestSection(chunk.getPos().x, i, chunk.getPos().z, engine, section, null, null))) break;
             }
         }
 
@@ -160,14 +155,7 @@ public class VoxelIngestService {
             //if (blNone && slNone) {
             //    continue;
             //}
-            engine.markActive();
-            this.ingestQueue.add(new IngestSection(chunk.getPos().x, i, chunk.getPos().z, engine, section, bl, sl));//TODO: fixme, this is technically not safe todo on the chunk load ingest, we need to copy the section data so it cant be modified while being read
-            try {
-                this.service.execute();
-            } catch (Exception e) {
-                Logger.error("Executing had an error: assume shutting down, aborting",e);
-                break;
-            }
+            if (!this.submit(new IngestSection(chunk.getPos().x, i, chunk.getPos().z, engine, section, bl, sl))) break;
         }
         return true;
     }
@@ -176,8 +164,10 @@ public class VoxelIngestService {
         return this.service.numJobs();
     }
 
-    public void shutdown() {
+    public synchronized void shutdown() {
         this.service.shutdown();
+        IngestSection task;
+        while ((task = this.ingestQueue.poll()) != null) task.world.releaseRef();
     }
 
     //Utility method to ingest a chunk into the given WorldIdentifier or world
@@ -197,16 +187,24 @@ public class VoxelIngestService {
     }
 
     private boolean rawIngest0(WorldEngine engine, LevelChunkSection section, int x, int y, int z, DataLayer bl, DataLayer sl) {
-        this.ingestQueue.add(new IngestSection(x, y, z, engine, section, bl, sl));
+        return this.submit(new IngestSection(x, y, z, engine, section, bl, sl));
+    }
+
+    // Serialize queue submission against shutdown so every world reference has
+    // exactly one owner: a running job or the shutdown queue drain.
+    private synchronized boolean submit(IngestSection task) {
+        if (!this.service.isLive()) return false;
+        task.world.acquireRef();
+        this.ingestQueue.add(task);
         try {
             this.service.execute();
             return true;
         } catch (Exception e) {
-            Logger.error("Executing had an error: assume shutting down, aborting",e);
+            // Leave queued ownership to shutdown if scheduling partly succeeded.
+            Logger.error("Executing had an error: assume shutting down, aborting", e);
             return false;
         }
     }
-
     public static boolean rawIngest(WorldIdentifier id, LevelChunkSection section, int x, int y, int z, DataLayer bl, DataLayer sl) {
         if (id == null) return false;
         var engine = id.getOrCreateEngine();

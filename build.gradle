@@ -167,8 +167,28 @@ java {
 }
 
 jar {
+    dependsOn 'dummySodiumProviderGenerator'
     from("LICENSE") {
         rename { "${it}_${project.archives_base_name}"}
+    }
+}
+
+// Fabric only considers this nested provider on a dedicated server. Its version
+// tracks the Sodium version used to compile this Minecraft 1.21.1 backport.
+tasks.register('dummySodiumProviderGenerator', Jar) {
+    destinationDirectory.set(layout.buildDirectory.dir('generated/sodium-provider'))
+    archiveFileName.set('dummyprovider.jar')
+    def props = [sodium_version: '0.8.12-alpha.3+mc1.21.1']
+    inputs.properties(props)
+    from('dummyprovider.fabric.mod.json') {
+        rename('dummyprovider.fabric.mod.json', 'fabric.mod.json')
+        expand(props)
+    }
+}
+
+jar {
+    from(tasks.named('dummySodiumProviderGenerator')) {
+        into 'META-INF/jars'
     }
 }
 
@@ -271,4 +291,17 @@ if (!isInGHA) {
             exclude group: 'net.fabricmc', module: 'fabric-loader'
         }
     }
+}
+
+sourceSets {
+    verification {
+        compileClasspath += sourceSets.main.compileClasspath + sourceSets.main.output
+        runtimeClasspath += sourceSets.main.runtimeClasspath + sourceSets.main.output
+    }
+}
+tasks.register('featureRegression', JavaExec) {
+    dependsOn verificationClasses
+    classpath = sourceSets.verification.runtimeClasspath
+    mainClass = 'FeatureRegression'
+    jvmArgs '--enable-native-access=ALL-UNNAMED'
 }

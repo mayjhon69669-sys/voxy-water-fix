@@ -22,6 +22,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.tags.BlockTags;
 import net.minecraft.world.level.BlockAndTintGetter;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.ColorResolver;
@@ -280,6 +281,9 @@ public class ModelFactory {
         }
         if (layer==null && (flags&8)!=0) {
             layer = RenderType.cutout();
+        }
+        if (bake.state.is(BlockTags.LEAVES)) {
+            layer = RenderType.solid();
         }
         if (layer == null) {
             layer = RenderType.solid();
@@ -806,23 +810,10 @@ public class ModelFactory {
     }
 
     private static BlockColor getColourProvider(Block block) {
-        BlockState defaultState = block.defaultBlockState();
-        var blockColors = Minecraft.getInstance().getBlockColors();
-        if (block instanceof LiquidBlock) {
-            return (state, world, pos, tintIndex) -> blockColors.getColor(state, world, pos, tintIndex);
-        }
-        int color;
-        try {
-            color = blockColors.getColor(defaultState, null, BlockPos.ZERO, 0);
-        } catch (Exception e) {
-            return null;
-        }
-        if (color != 0 && color != -1) {
-            return (state, world, pos, tintIndex) -> blockColors.getColor(state, world, pos, tintIndex);
-        }
-        return null;
+        // A provider may reject a null world even though it supplies biome colours.
+        // Query registration directly rather than probing it without a world.
+        return Minecraft.getInstance().getBlockColors().blockColors.byId(BuiltInRegistries.BLOCK.getId(block));
     }
-
     //TODO: add a method to detect biome dependent colours (can do by detecting if getColor is ever called)
     // if it is, need to add it to a list and mark it as biome colour dependent or something then the shader
     // will either use the uint as an index or a direct colour multiplier

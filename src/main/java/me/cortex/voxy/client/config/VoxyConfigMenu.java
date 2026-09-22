@@ -125,11 +125,12 @@ public class VoxyConfigMenu implements ConfigEntryPoint {
                                         }, "voxy:rendering", RENDER_RELOAD)
                                         .setImpact(OptionImpact.MEDIUM)
                         ), new Group(
-                                new BoolOption(
+                                new EnumOption<>(
                                     "voxy:eviromental_fog",
+                                    me.cortex.voxy.client.core.NormalRenderPipeline.FogMode.class,
                                     Component.translatable("voxy.config.general.environmental_fog"),
-                                    () -> CFG.useEnvironmentalFog,
-                                    v -> { CFG.useEnvironmentalFog = v; })
+                                    () -> CFG.getFogMode(), v -> CFG.setFogMode(v))
+                                        .setNameProvider(v -> Component.translatable("voxy.config.general.environmental_fog." + v.name().toLowerCase(java.util.Locale.ROOT)))
                                         .setPostChangeFlags(RENDER_RELOAD),
                                 new EnumOption<>("voxy:ssao_mode",
                                         SSAO.SSAOMode.class,
@@ -154,14 +155,14 @@ public class VoxyConfigMenu implements ConfigEntryPoint {
                                 new IntOption(
                                         "voxy:fog_intensity",
                                         Component.translatable("voxy.config.general.fogIntensity"),
-                                        ()->Math.round(CFG.fogIntensity * 100), v->CFG.fogIntensity=v / 100,
+                                        ()->Math.round(CFG.fogIntensity * 100), v->CFG.fogIntensity=v / 100.0f,
                                         new Range(0, 100, 1))
                                         .setImpact(OptionImpact.LOW)
                                         .setPostChangeFlags(RENDER_RELOAD),
                                 new IntOption(
                                         "voxy:fog_density",
                                         Component.translatable("voxy.config.general.fogDensity"),
-                                        ()->Math.round(CFG.fogDensity * 100), v->CFG.fogDensity=v / 100,
+                                        ()->Math.round(CFG.fogDensity * 100), v->CFG.fogDensity=v / 100.0f,
                                         new Range(0, 100, 1))
                                         .setImpact(OptionImpact.LOW)
                                         .setPostChangeFlags(RENDER_RELOAD),
