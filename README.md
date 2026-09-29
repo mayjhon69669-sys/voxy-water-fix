@@ -1,6 +1,6 @@
-# Voxy personal backport for Minecraft 1.21.1
+# Voxy 2.19 backport for Minecraft 1.21.1
 
-Voxy 0.2.19 beta for Minecraft 1.21.1, Fabric and Sodium 0.8.12, a distant-water height correction and personal fast-leaf rendering changes.
+Voxy 0.2.19 beta for Minecraft 1.21.1, Fabric and Sodium 0.8.12, a distant-water height correction AND personal fast-leaf rendering changes.
 
 
 This is an unofficial backport. Do not request support for it from the original Voxy developers.
