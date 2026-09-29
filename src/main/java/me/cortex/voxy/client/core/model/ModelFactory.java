@@ -637,7 +637,6 @@ public class ModelFactory {
         //TODO: THIS
         modelFlags |= isShaded?8:0;//model has AO and shade
 
-        // Limit the LOD seam correction to fluids.
         modelFlags |= isFluid?16:0;
 
         //modelFlags |= blockRenderLayer == RenderLayer.getSolid()?0:1;// should discard alpha
@@ -808,7 +807,6 @@ public class ModelFactory {
     }
 
     private static BlockColor getColourProvider(Block block) {
-        // Some registered providers return no colour without a world.
         return Minecraft.getInstance().getBlockColors().blockColors.byId(BuiltInRegistries.BLOCK.getId(block));
     }
     //TODO: add a method to detect biome dependent colours (can do by detecting if getColor is ever called)

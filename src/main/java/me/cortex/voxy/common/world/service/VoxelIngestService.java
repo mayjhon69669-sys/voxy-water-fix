@@ -190,7 +190,6 @@ public class VoxelIngestService {
         return this.submit(new IngestSection(x, y, z, engine, section, bl, sl));
     }
 
-    // Prevent queue submissions while shutdown drains world references.
     private synchronized boolean submit(IngestSection task) {
         if (!this.service.isLive()) return false;
         task.world.acquireRef();
@@ -199,7 +198,6 @@ public class VoxelIngestService {
             this.service.execute();
             return true;
         } catch (Exception e) {
-            // Shutdown releases any reference still in the queue.
             Logger.error("Executing had an error: assume shutting down, aborting", e);
             return false;
         }

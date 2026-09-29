@@ -220,7 +220,6 @@ public class SoftwareModelTextureBakery {
     public int renderToOutput(BlockState state, long outputBuffer) {
         MemoryUtil.memSet(outputBuffer, 0, 16 * 16 * 8 * 6);
 
-        // Preserve texture colours on cherry and untinted modded leaves.
         if (state.is(BlockTags.LEAVES)) {
             boolean tintedModel = usesTintedLeafModel(state);
             ResourceLocation blockId = BuiltInRegistries.BLOCK.getKey(state.getBlock());
@@ -392,7 +391,6 @@ public class SoftwareModelTextureBakery {
                 | ((int)(green / samples) << 8)
                 | (int)(red / samples);
 
-        // ModelFactory applies biome tint after baking.
         boolean preserveBiomeTint = applyModelTint && allSamplesTinted;
         if (applyModelTint && !preserveBiomeTint) {
             try {
@@ -409,7 +407,6 @@ public class SoftwareModelTextureBakery {
                             | ((baseBlue * tintBlue / 255) << 16);
                 }
             } catch (Exception ignored) {
-                // Keep the texture colour if the provider requires a world.
             }
         }
         renderTextureColouredLeafCube(outputBuffer, baseColour, preserveBiomeTint);

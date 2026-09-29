@@ -173,7 +173,6 @@ jar {
     }
 }
 
-// Server-only Sodium dependency stub.
 tasks.register('dummySodiumProviderGenerator', Jar) {
     destinationDirectory.set(layout.buildDirectory.dir('generated/sodium-provider'))
     archiveFileName.set('dummyprovider.jar')
