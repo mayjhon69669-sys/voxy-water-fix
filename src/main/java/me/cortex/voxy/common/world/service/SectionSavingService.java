@@ -29,7 +29,7 @@ public class SectionSavingService {
         try {
             //Unmark it dirty here (if it wasnt or w/e) so that it doesnt pointlessly resave (in theory this should be safe to do)
             if (section.exchangeIsInSaveQueue(false)) {
-                section.setNotDirty();//do after the atomic exchange
+                section.setNotDirty();
                 task.engine.storage.saveSection(section);
             } else {
                 section.setNotDirty();

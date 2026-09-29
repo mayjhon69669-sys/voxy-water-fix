@@ -90,7 +90,6 @@ public class WorldUpdater {
     }
 
 
-    // Exposed for the upstream JMH benchmark.
     public static long insertSectionLvlIntoWorld(VoxelizedSection section, WorldSection worldSection) {
         final long[] vdat = section.section;
         final int lvl = worldSection.lvl;

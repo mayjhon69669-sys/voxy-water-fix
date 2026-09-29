@@ -9,7 +9,7 @@ import org.joml.Vector4f;
 import java.util.Arrays;
 
 public class SoftwareRasterizer {
-    private static final int INTEGER_BITS = 13;//+-512
+    private static final int INTEGER_BITS = 13;
     private static final int TOTAL_INTEGER_BITS = INTEGER_BITS+1;
     private static final int FIXED_POINT_BITS = 32-TOTAL_INTEGER_BITS;
     private static final long FIXED_POINT_BIT_SCALE = (1<<FIXED_POINT_BITS)-1;
@@ -134,9 +134,7 @@ public class SoftwareRasterizer {
         Vector3i v2 = this.scratchR2;
         Vector3i v3 = this.scratchR3;
 
-        //THIS IS BREAKING FOR SOME REASON
         int area = edge(v1, v2, v3);
-        //fromFixed(area)~==edge(this.scratch3, this.scratch4, this.scratch1)
 
         //Pretty sure this is how you check for winding order aswell (if area is negative its counterclockwise)
         if (area<0 == this.cullBackFace) {
@@ -161,7 +159,6 @@ public class SoftwareRasterizer {
         int minY = fromFixed2Int(Math.max(Math.min(Math.min(v1.y, v2.y), v3.y), 0));
         int maxY = fromFixed2Int(Math.min(Math.max(Math.max(v1.y, v2.y), v3.y), toFixed(this.targetSize-1)));
 
-        //float invArea = 1.0f/area;
         for (int py = minY; py<=maxY; py++) {
             for (int px = minX; px<=maxX; px++) {
                 int cx = toFixed(px)+toFixed(0.5f);
@@ -306,12 +303,10 @@ public class SoftwareRasterizer {
     }
 
     private static int fixedMul(int a, int b) {
-        //return (int)((Integer.toUnsignedLong(a) * Integer.toUnsignedLong(b)) >>> (64-(FIXED_POINT_BITS*2)));
         return (int)((((long)a) * ((long)b))/FIXED_POINT_BIT_SCALE);
     }
 
     private static int fixedDiv(int a, int b) {
-        //return (int)((Integer.toUnsignedLong(a) * Integer.toUnsignedLong(b)) >>> (64-(FIXED_POINT_BITS*2)));
         return (int)((((long)a)*FIXED_POINT_BIT_SCALE)/(b));
     }
 
