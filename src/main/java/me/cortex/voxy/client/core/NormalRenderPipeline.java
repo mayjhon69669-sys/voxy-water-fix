@@ -131,8 +131,7 @@ public class NormalRenderPipeline extends AbstractRenderPipeline {
             float end = Math.max(renderDistance + 1, VoxyConfig.CONFIG.sectionRenderDistance * 512 - 32);
             float start = Math.max(renderDistance, end * 0.9f);
             glUniform2f(9, start, 1.0f / Math.max(end - start, 1.0f));
-            // point is in view space; project out world-up so pitching the camera
-            // does not change the horizontal distance used for the LOD edge.
+            // Keep fade distance independent of camera pitch.
             var up = viewport.modelView.transformDirection(new org.joml.Vector3f(0, 1, 0)).normalize();
             glUniform3f(10, up.x, up.y, up.z);
         }

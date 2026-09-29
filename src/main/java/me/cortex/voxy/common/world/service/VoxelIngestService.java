@@ -190,8 +190,7 @@ public class VoxelIngestService {
         return this.submit(new IngestSection(x, y, z, engine, section, bl, sl));
     }
 
-    // Serialize queue submission against shutdown so every world reference has
-    // exactly one owner: a running job or the shutdown queue drain.
+    // Prevent queue submissions while shutdown drains world references.
     private synchronized boolean submit(IngestSection task) {
         if (!this.service.isLive()) return false;
         task.world.acquireRef();
@@ -200,7 +199,7 @@ public class VoxelIngestService {
             this.service.execute();
             return true;
         } catch (Exception e) {
-            // Leave queued ownership to shutdown if scheduling partly succeeded.
+            // Shutdown releases any reference still in the queue.
             Logger.error("Executing had an error: assume shutting down, aborting", e);
             return false;
         }

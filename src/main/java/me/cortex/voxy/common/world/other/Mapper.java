@@ -78,8 +78,6 @@ public class Mapper {
     }
 
     public static int isNotAirInt(long id) {
-        // Block id zero is air, so clamp every other id to one. Returning an
-        // int avoids a branch in the section-loading and update hot paths.
         return Math.min(getBlockId(id), 1);
     }
 

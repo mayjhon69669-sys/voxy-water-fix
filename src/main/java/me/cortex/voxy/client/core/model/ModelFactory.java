@@ -637,9 +637,7 @@ public class ModelFactory {
         //TODO: THIS
         modelFlags |= isShaded?8:0;//model has AO and shade
 
-        // Expose fluid models to the render shader. This lets the shader apply
-        // a water-surface-only LOD seam guard without expanding glass or other
-        // translucent block geometry.
+        // Limit the LOD seam correction to fluids.
         modelFlags |= isFluid?16:0;
 
         //modelFlags |= blockRenderLayer == RenderLayer.getSolid()?0:1;// should discard alpha
@@ -810,8 +808,7 @@ public class ModelFactory {
     }
 
     private static BlockColor getColourProvider(Block block) {
-        // A provider may reject a null world even though it supplies biome colours.
-        // Query registration directly rather than probing it without a world.
+        // Some registered providers return no colour without a world.
         return Minecraft.getInstance().getBlockColors().blockColors.byId(BuiltInRegistries.BLOCK.getId(block));
     }
     //TODO: add a method to detect biome dependent colours (can do by detecting if getColor is ever called)

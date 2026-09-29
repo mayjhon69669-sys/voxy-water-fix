@@ -173,8 +173,7 @@ jar {
     }
 }
 
-// Fabric only considers this nested provider on a dedicated server. Its version
-// tracks the Sodium version used to compile this Minecraft 1.21.1 backport.
+// Server-only Sodium dependency stub.
 tasks.register('dummySodiumProviderGenerator', Jar) {
     destinationDirectory.set(layout.buildDirectory.dir('generated/sodium-provider'))
     archiveFileName.set('dummyprovider.jar')

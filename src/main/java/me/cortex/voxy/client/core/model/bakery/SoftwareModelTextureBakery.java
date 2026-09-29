@@ -220,9 +220,7 @@ public class SoftwareModelTextureBakery {
     public int renderToOutput(BlockState state, long outputBuffer) {
         MemoryUtil.memSet(outputBuffer, 0, 16 * 16 * 8 * 6);
 
-        // Only replace leaf models which actually use Minecraft's tint flag.
-        // Leaves with colour baked into their texture (cherry and many modded
-        // trees) must stay on Voxy's normal model path or they become green.
+        // Preserve texture colours on cherry and untinted modded leaves.
         if (state.is(BlockTags.LEAVES)) {
             boolean tintedModel = usesTintedLeafModel(state);
             ResourceLocation blockId = BuiltInRegistries.BLOCK.getKey(state.getBlock());
@@ -394,9 +392,7 @@ public class SoftwareModelTextureBakery {
                 | ((int)(green / samples) << 8)
                 | (int)(red / samples);
 
-        // Keep fully tinted leaf textures uncoloured here. ModelFactory resolves
-        // their colour with a biome-aware getter, including providers that reject
-        // a null world (Nature's Spirit mahogany, for example).
+        // ModelFactory applies biome tint after baking.
         boolean preserveBiomeTint = applyModelTint && allSamplesTinted;
         if (applyModelTint && !preserveBiomeTint) {
             try {
@@ -413,8 +409,7 @@ public class SoftwareModelTextureBakery {
                             | ((baseBlue * tintBlue / 255) << 16);
                 }
             } catch (Exception ignored) {
-                // A few mod colour providers require a live world. Their baked
-                // texture colour is still a safer fallback than forcing oak green.
+                // Keep the texture colour if the provider requires a world.
             }
         }
         renderTextureColouredLeafCube(outputBuffer, baseColour, preserveBiomeTint);
