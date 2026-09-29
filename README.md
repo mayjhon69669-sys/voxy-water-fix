@@ -27,4 +27,6 @@ For the additional rasterizer and shader checks, run `./gradlew featureRegressio
 
 ## Credits and license
 
-Voxy was created by MCRcortex. This repository is based on the [Minecraft 1.21.1/Sodium 0.8 backport](https://github.com/m3t4f1v3/voxy/tree/mc_1211-sodium0.8.12). Fog/fade was adapted from the supplied newer development source; this is not a wholesale update to the newer renderer. See [LICENSE.md](LICENSE.md) for the project's license notice.
+Voxy was created by MCRcortex and is a lod rendering mod.
+(Dont go complain about issues in her server please insted look for "yeet" in this server instead) 
+https://discord.gg/6rH7nzmfg8
